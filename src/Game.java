@@ -5,6 +5,12 @@ import player.Player;
 
 import java.util.Scanner;
 
+//TODO add money to player.
+//TODO make sure player hand  and computer hand clears after each round and the deck is reset
+//TODO ask if player wants to continue or cash out
+//TODO testing to make sure ace works
+//TODO check blackjack rules to make sure everything is correct
+
 public class Game {
 
     private Player player;
@@ -56,7 +62,7 @@ public class Game {
                     cardNumber++;
                     if (player.getHand().getPoints() > 21) {
                         System.out.println("You're over, you lose;");
-                        begin();
+                        computerTurn();
                     }
 
                 } else {
@@ -82,13 +88,16 @@ public class Game {
         System.out.println("Final Scores: ");
         System.out.println("You: " + player.getHand().getPoints());
         System.out.println("Computer: " + computer.getHand().getPoints());
-        if (player.getHand().getPoints() > computer.getHand().getPoints()) {
+        if(computer.getHand().getPoints() > 21){
+            System.out.println("You win!");
+        }else if (player.getHand().getPoints() > computer.getHand().getPoints()) {
             System.out.println("You win!");
         } else if (player.getHand().getPoints() == computer.getHand().getPoints()) {
             System.out.println("You tied.  No winner.");
         }else {
             System.out.println("You lose.");
         }
+        begin();
     }
 
 }

@@ -1,6 +1,7 @@
 package player;
 
 import cards.Card;
+import cards.CardValue;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -21,8 +22,14 @@ public class Hand {
     }
 
     public void setHand(Card card) {
-       hand.add(card);
-       points += card.getCardValue().getValue();
+        if(hand.size() == 1 && hand.get(0).getCardValue().getValue() == 10 && card.getCardValue().equals(CardValue.ACE)) {
+            hand.add(card);
+            points = 21;
+        }if(points < 21 && card.getCardValue().equals(CardValue.ACE)){
+            points += 11;
+        } else {
+            points += card.getCardValue().getValue();
+        }
     }
 
     public int getPoints() {
