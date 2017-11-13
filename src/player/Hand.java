@@ -10,20 +10,22 @@ public class Hand {
     private List<Card> hand;
     private int points;
     private boolean hit;
+    private int bet;
 
     public Hand() {
         points = 0;
         hand = new LinkedList<>();
         hit = true;
+        bet = 0;
     }
 
-    public List<Card> getHand() {
+    public List<Card> getCards() {
         return hand;
     }
 
     public void setHand(Card card) {
+        hand.add(card);
         if(hand.size() == 1 && hand.get(0).getCardValue().getValue() == 10 && card.getCardValue().equals(CardValue.ACE)) {
-            hand.add(card);
             points = 21;
         }if(points < 21 && card.getCardValue().equals(CardValue.ACE)){
             points += 11;
@@ -32,15 +34,17 @@ public class Hand {
         }
     }
 
-    public int getPoints() {
+    public String printPoints() {
+       return String.format("%1$2s", Integer.toString(points));
+    }
+
+    public int getPoints(){
         return points;
     }
 
-//    public void setPoints() {
-//        for(Card card : hand){
-//           points += card.getCardValue().getValue();
-//        }
-//    }
+    public void setPoints(int points) {
+       this.points = points;
+        }
 
     public void clearHand(){
         hand.clear();
@@ -52,11 +56,20 @@ public class Hand {
         }
     }
 
-    public void setHit(){
-        hit = false;
+    public void setHit(boolean hit){
+        this.hit = false;
     }
 
     public boolean getHit(){
         return hit;
     }
+
+    public void setBet(int bet){
+        this.bet = bet;
+    }
+
+    public int getBet(){
+        return bet;
+    }
+
 }

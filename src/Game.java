@@ -1,8 +1,11 @@
 import cards.Card;
 import cards.Deck;
 import player.Computer;
+import player.Hand;
 import player.Player;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Scanner;
 
 //TODO add money to player.
@@ -12,72 +15,146 @@ import java.util.Scanner;
 //TODO check blackjack rules to make sure everything is correct
 
 public class Game {
-
+    private Scanner scanner;
     private Player player;
     private Computer computer;
     int cardNumber;
     Card[] cards;
+    StringFormatter stringFormatter;
 
     public Game() {
 
     }
 
     public void begin() {
-        player = new Player("Jeffrey");
+        stringFormatter = new StringFormatter();
+        scanner = new Scanner(System.in);
+        System.out.print("Please enter your name: ");
+        player = new Player(scanner.nextLine());
         computer = new Computer();
-        Deck deck = new Deck();
-        deck.shuffle();
-        cards = deck.getDeck();
-        cardNumber = 0;
-
-        Deal();
-        playerTurn();
-        computerTurn();
+        deal();
     }
 
-    public void Deal() {
+    public void deal() {
+        player.setHand(new Hand());
+        computer.setHand(new Hand());
+        Deck deck = new Deck();
+        cards = deck.getDeck();
+        cardNumber = 0;
+        deck.shuffle();
+        bet();
         player.getHand().setHand(cards[cardNumber]);
         cardNumber++;
         computer.getHand().setHand(cards[cardNumber]);
         cardNumber++;
+        update();
+        playerTurn();
+        computerTurn();
     }
 
-    public void playerTurn() {
-        Scanner scanner = new Scanner(System.in);
-        while (player.getHand().getHit()) {
-            player.getHand().printHand();
-            System.out.println("You have " + player.getHand().getPoints() + " points.");
+    public void update() {
+        System.out.println("Money: " + player.getMoney() + "           Bet: " + player.getHand().getBet());
+        System.out.println("---------------------------------------");
+        System.out.println("|" + stringFormatter.formatString(player.getName()) + "|      Dealer      |");
+        System.out.println("---------------------------------------");
 
-            while (true) {
-                System.out.println("Please type hit or stand: ");
-                String play = scanner.nextLine();
-                if (!play.toLowerCase().equals("hit") && !play.toLowerCase().equals("h") &&
-                        !play.toLowerCase().equals("s") && !play.toLowerCase().equals("stand")) {
-                    System.out.println("I don't understand.  Please enter again.");
-                } else if (play.toLowerCase().equals("h") || play.toLowerCase().equals("hit")) {
-                    System.out.println("You hit");
-                    player.getHand().setHand(cards[cardNumber]);
-                    System.out.println(cards[cardNumber]);
-                    System.out.println(player.getHand().getPoints());
-                    cardNumber++;
-                    if (player.getHand().getPoints() > 21) {
-                        System.out.println("You're over, you lose;");
-                        computerTurn();
-                    }
+        if (computer.getComputersTurn()) {
+            System.out.println("|       " + player.getHand().printPoints() + "         |        " +
+                    computer.getHand().printPoints() + "        |");
+        } else {
+            System.out.println("|        " + player.getHand().printPoints() + "        |        " +
+                    "--        |");
 
-                } else {
-                    System.out.println("You stand");
-                    computerTurn();
-                }
+
+        }
+        printCardsInHand();
+        System.out.println("---------------------------------------");
+    }
+
+    public void printCardsInHand() {
+
+        Iterator<Card> p = player.getHand().getCards().iterator();
+        Iterator<Card> c = computer.getHand().getCards().iterator();
+        System.out.println("---------------------------------------");
+        if (computer.getComputersTurn()) {
+            while (p.hasNext() && c.hasNext()) {
+                System.out.println("|" + stringFormatter.formatString(p.next().toString()) + "|" +
+                        stringFormatter.formatString(c.next().toString()) + "|");
+            }
+            while (p.hasNext()) {
+                System.out.println("|" + stringFormatter.formatString(p.next().toString()) + "|" +
+                        stringFormatter.formatString("") + "|");
+            }
+            while (c.hasNext()) {
+                System.out.println("|" + stringFormatter.formatString("") + "|" +
+                        stringFormatter.formatString(c.next().toString()) + "|");
+            }
+        } else {
+            Iterator<Card> pl = player.getHand().getCards().iterator();
+            while (pl.hasNext()) {
+                System.out.println("|" + stringFormatter.formatString(pl.next().toString()) + "|" +
+                        stringFormatter.formatString("") + "|");
             }
         }
     }
 
+    public void bet() {
+        int bet = 0;
+        System.out.print("You have " + player.getMoney());
+        if (player.getMoney() == 1) {
+            System.out.print(" dollar.");
+        } else {
+            System.out.println(" dollars.");
+        }
+        while (true) {
+            try {
+                System.out.print("How much would you like to bet?: ");
+                bet = Integer.parseInt(scanner.nextLine());
+                System.out.println();
+                player.getHand().setBet(bet);
+                player.setMoney(-bet);
+                return;
+            } catch (Exception e) {
+                System.out.println("Invalid amount.");
+            }
+        }
+    }
+
+    public void split(){
+        //TODO
+        //player.setSplitHand(player.getHand().setHand(player.getHand().getCards().get(1));
+    }
+
+
+    public void playerTurn() {
+        while (true) {
+
+            System.out.print("Please type hit or stand: ");
+            String play = scanner.nextLine();
+            if (!play.toLowerCase().equals("hit") && !play.toLowerCase().equals("h") &&
+                    !play.toLowerCase().equals("s") && !play.toLowerCase().equals("stand")) {
+                System.out.println("I don't understand.  Please enter again.");
+            } else if (play.toLowerCase().equals("h") || play.toLowerCase().equals("hit")) {
+                player.getHand().setHand(cards[cardNumber]);
+                update();
+
+                cardNumber++;
+                if (player.getHand().getPoints() > 21) {
+                    computerTurn();
+                }
+
+            } else {
+                computerTurn();
+            }
+
+        }
+    }
+
     public void computerTurn() {
+        computer.setComputersTurn(true);
         while (computer.getHand().getPoints() < 17) {
-            System.out.println(computer.getHand().getPoints());
-            System.out.println(cards[cardNumber]);
             computer.getHand().setHand(cards[cardNumber]);
+            update();
             cardNumber++;
         }
         winner();
@@ -85,19 +162,39 @@ public class Game {
     }
 
     public void winner() {
-        System.out.println("Final Scores: ");
-        System.out.println("You: " + player.getHand().getPoints());
-        System.out.println("Computer: " + computer.getHand().getPoints());
-        if(computer.getHand().getPoints() > 21){
+        if (computer.getHand().getPoints() > 21 && player.getHand().getPoints() <= 21) {
             System.out.println("You win!");
-        }else if (player.getHand().getPoints() > computer.getHand().getPoints()) {
+            player.setMoney(player.getHand().getBet() * 2);
+            System.out.println("Money: " + player.getMoney());
+        } else if (player.getHand().getPoints() > computer.getHand().getPoints() && player.getHand().getPoints() <= 21) {
             System.out.println("You win!");
+            player.setMoney(player.getHand().getBet() * 2);
+            System.out.println("Money: " + player.getMoney());
+
         } else if (player.getHand().getPoints() == computer.getHand().getPoints()) {
             System.out.println("You tied.  No winner.");
-        }else {
+            System.out.println("Money: " + player.getMoney());
+
+        } else {
             System.out.println("You lose.");
+            System.out.println("Money: " + player.getMoney());
+
         }
-        begin();
+
+        System.out.print("\nWould you like to play another hand? Y or N:");
+        String continueOrCashout;
+        while (true) {
+            continueOrCashout = scanner.nextLine().toLowerCase();
+            if (continueOrCashout.equals("y") || continueOrCashout.equals("yes")) {
+                deal();
+            } else if (continueOrCashout.equals("n") || continueOrCashout.equals("no")) {
+                System.exit(0);
+            } else {
+                System.out.print("I do not understand, please answer. Y or N: ");
+            }
+        }
+
+
     }
 
 }
